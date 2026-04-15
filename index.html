@@ -1,188 +1,908 @@
-<!DOCTYPE html>
+html = r'''<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCHED.SYS v3</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SCHED.SYS — 일정 관리 시스템</title>
 <style>
-:root{
-  --green:#00ff88;
-  --amber:#ffd400;
-  --cyan:#00f0ff;
-  --red:#ff4455;
-  --bg:#050505;
-}
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-body{
-  margin:0;
-  font-family:'Share Tech Mono', monospace;
-  background:var(--bg);
-  color:var(--green);
-  font-weight:600;
-  letter-spacing:0.5px;
-}
+  :root {
+    --green:#6dff9f; --green-dim:#3dff86; --green-glow:rgba(109,255,159,0.95);
+    --amber:#ffe14a; --amber-dim:#ffc400; --amber-glow:rgba(255,225,74,0.92);
+    --cyan:#67f3ff; --cyan-dim:#35e8ff; --cyan-glow:rgba(103,243,255,0.92);
+    --red:#ff6677; --red-dim:#ff4458; --red-glow:rgba(255,102,119,0.9);
+    --bg:#050707; --scanline:rgba(0,0,0,0.10);
+  }
 
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0 1px, transparent 1px 3px);
-  pointer-events:none;
-}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
-.neon-green{
-  color:var(--green);
-  text-shadow:0 0 5px var(--green),0 0 15px var(--green),0 0 30px var(--green);
-}
+  body{
+    background:var(--bg);color:var(--green);
+    font-family:'Share Tech Mono',monospace;
+    min-height:100vh;overflow-x:hidden;padding-bottom:120px;
+    font-weight:600; letter-spacing:.35px;
+  }
 
-.container{max-width:800px;margin:auto;padding:20px;}
+  body::before{
+    content:"";position:fixed;top:0;left:0;right:0;bottom:0;
+    background:
+      repeating-linear-gradient(0deg,var(--scanline) 0px,var(--scanline) 1px,transparent 1px,transparent 3px);
+    pointer-events:none;z-index:9999;
+  }
+  body::after{
+    content:"";position:fixed;top:0;left:0;right:0;bottom:0;
+    background:
+      radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.42) 100%);
+    pointer-events:none;z-index:9998;
+  }
 
-h1{text-align:center;margin-bottom:10px}
+  .container{max-width:800px;margin:0 auto;padding:16px}
 
-button{
-  background:none;
-  border:1px solid var(--green);
-  color:var(--green);
-  padding:8px;
-  cursor:pointer;
-}
+  .header{
+    border:1px solid var(--green-dim);padding:10px 16px;
+    margin-bottom:16px;text-align:center;background:rgba(85,255,136,0.04);
+    box-shadow:
+      0 0 10px rgba(109,255,159,0.16),
+      inset 0 0 18px rgba(109,255,159,0.06);
+  }
+  .header h1{
+    font-size:1.3em;letter-spacing:5px;
+    text-shadow:
+      0 0 3px var(--green),
+      0 0 10px var(--green-glow),
+      0 0 22px var(--green-glow),
+      0 0 46px rgba(109,255,159,0.72);
+    animation:flicker 4s infinite;
+  }
+  .header .sub{
+    font-size:0.7em;color:var(--green-dim);margin-top:3px;
+    text-shadow:0 0 8px rgba(109,255,159,0.35), 0 0 18px rgba(109,255,159,0.18);
+  }
+  @keyframes flicker{0%,100%{opacity:1}92%{opacity:1}93%{opacity:.85}94%{opacity:1}96%{opacity:.92}97%{opacity:1}}
 
-button:hover{
-  box-shadow:0 0 10px var(--green);
-}
+  .date-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+  .date-nav button{
+    background:none;border:1px solid var(--green-dim);color:var(--green);
+    font-family:inherit;font-size:1em;padding:8px 14px;cursor:pointer;
+    min-height:44px;transition:all .2s;
+    text-shadow:0 0 8px rgba(109,255,159,0.55), 0 0 20px rgba(109,255,159,0.25);
+    box-shadow:0 0 12px rgba(109,255,159,0.10), inset 0 0 8px rgba(109,255,159,0.04);
+  }
+  .date-nav button:hover{
+    box-shadow:0 0 14px rgba(109,255,159,0.25), inset 0 0 10px rgba(109,255,159,0.08);
+  }
+  .date-nav button:active{background:rgba(85,255,136,0.15)}
+  .date-nav .current-date{
+    min-width:170px;text-align:center;font-size:0.9em;
+    text-shadow:
+      0 0 3px var(--green),
+      0 0 10px var(--green-glow),
+      0 0 24px rgba(109,255,159,0.45);
+  }
+  .date-nav .today-btn{
+    font-size:0.75em;color:var(--amber);border-color:var(--amber-dim);
+    text-shadow:
+      0 0 3px var(--amber),
+      0 0 10px var(--amber-glow),
+      0 0 22px rgba(255,225,74,0.44);
+    box-shadow:0 0 12px rgba(255,225,74,0.12), inset 0 0 8px rgba(255,225,74,0.05);
+  }
+  .date-nav .today-btn:hover{
+    box-shadow:0 0 16px rgba(255,225,74,0.24), inset 0 0 12px rgba(255,225,74,0.08);
+  }
+  .date-nav .today-btn:active{background:rgba(255,221,51,0.15)}
 
-input{
-  width:100%;
-  background:black;
-  border:1px solid var(--green);
-  color:var(--green);
-  padding:6px;
-}
+  .week-bar{display:flex;gap:3px;margin-bottom:16px}
+  .week-bar .day{
+    flex:1;text-align:center;padding:8px 2px;border:1px solid rgba(109,255,159,0.24);
+    cursor:pointer;font-size:0.75em;transition:all .2s;min-height:52px;
+    box-shadow:inset 0 0 8px rgba(109,255,159,0.03);
+  }
+  .week-bar .day:active{background:rgba(85,255,136,0.1)}
+  .week-bar .day.active{
+    border-color:var(--green);
+    background:rgba(85,255,136,0.12);
+    text-shadow:
+      0 0 3px var(--green),
+      0 0 8px var(--green-glow),
+      0 0 18px rgba(109,255,159,0.45);
+    box-shadow:
+      0 0 12px rgba(109,255,159,0.12),
+      inset 0 0 16px rgba(109,255,159,0.06);
+  }
+  .week-bar .day.today{
+    border-color:var(--amber);color:var(--amber);
+    box-shadow:inset 0 0 10px rgba(255,225,74,0.04);
+  }
+  .week-bar .day.today.active{
+    border-color:var(--amber);background:rgba(255,221,51,0.12);
+    text-shadow:
+      0 0 3px var(--amber),
+      0 0 9px var(--amber-glow),
+      0 0 18px rgba(255,225,74,0.38);
+    box-shadow:
+      0 0 14px rgba(255,225,74,0.12),
+      inset 0 0 16px rgba(255,225,74,0.06);
+  }
+  .week-bar .day .day-name{font-size:0.85em;color:var(--green-dim);text-shadow:0 0 8px rgba(109,255,159,0.18)}
+  .week-bar .day.today .day-name{color:var(--amber-dim);text-shadow:0 0 8px rgba(255,225,74,0.18)}
+  .week-bar .day .day-num{
+    font-size:1.1em;margin-top:2px;
+    text-shadow:0 0 8px rgba(109,255,159,0.22);
+  }
+  .week-bar .day .dot{
+    width:5px;height:5px;border-radius:50%;background:var(--green);margin:4px auto 0;opacity:0;
+    box-shadow:0 0 6px var(--green-glow),0 0 14px rgba(109,255,159,0.42);
+  }
+  .week-bar .day .dot.has-event{opacity:1}
+  .week-bar .day.today .dot.has-event{
+    background:var(--amber);
+    box-shadow:0 0 6px var(--amber-glow),0 0 14px rgba(255,225,74,0.42);
+  }
 
-.item{
-  border:1px solid var(--green);
-  padding:10px;
-  margin:5px 0;
-}
+  .backup-bar{
+    display:flex;justify-content:flex-end;gap:8px;align-items:center;
+    margin:-2px 0 14px;
+  }
+  .backup-btn{
+    background:none;border:1px solid rgba(109,255,159,0.42);color:var(--green);
+    font-family:inherit;font-size:0.7em;padding:8px 12px;cursor:pointer;letter-spacing:1px;
+    min-height:38px;
+    text-shadow:0 0 8px rgba(109,255,159,0.42), 0 0 18px rgba(109,255,159,0.18);
+    box-shadow:0 0 10px rgba(109,255,159,0.08), inset 0 0 8px rgba(109,255,159,0.04);
+    transition:all .15s;
+  }
+  .backup-btn:hover{
+    border-color:var(--green);
+    box-shadow:0 0 14px rgba(109,255,159,0.18), inset 0 0 10px rgba(109,255,159,0.05);
+  }
+  .backup-btn.cyan{
+    color:var(--cyan);border-color:rgba(103,243,255,0.42);
+    text-shadow:0 0 8px rgba(103,243,255,0.42), 0 0 18px rgba(103,243,255,0.18);
+    box-shadow:0 0 10px rgba(103,243,255,0.08), inset 0 0 8px rgba(103,243,255,0.04);
+  }
+  .backup-btn.cyan:hover{
+    border-color:var(--cyan);
+    box-shadow:0 0 14px rgba(103,243,255,0.18), inset 0 0 10px rgba(103,243,255,0.05);
+  }
+  #importFile{display:none}
 
-.done{
-  opacity:0.4;
-  text-decoration:line-through;
-}
+  .section-label{
+    font-size:0.8em;color:var(--green-dim);
+    border-bottom:1px solid rgba(109,255,159,0.28);
+    padding-bottom:4px;margin-bottom:10px;letter-spacing:3px;
+    display:flex;justify-content:space-between;
+    text-shadow:
+      0 0 3px rgba(109,255,159,0.42),
+      0 0 10px rgba(109,255,159,0.26),
+      0 0 22px rgba(109,255,159,0.14);
+  }
+  .section-label.cyan{
+    color:var(--cyan-dim);
+    border-bottom-color:rgba(103,243,255,0.28);
+    text-shadow:
+      0 0 3px rgba(103,243,255,0.42),
+      0 0 10px rgba(103,243,255,0.26),
+      0 0 22px rgba(103,243,255,0.14);
+  }
 
-.top-bar{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:10px;
-}
+  .schedule-list{margin-bottom:20px}
+
+  .sched-item{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:12px;border:1px solid rgba(109,255,159,0.22);
+    margin-bottom:5px;transition:all .15s;
+    box-shadow:inset 0 0 8px rgba(109,255,159,0.03);
+  }
+
+  .sched-item .check{
+    width:30px;height:30px;border:2px solid var(--green-dim);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:1.1em;flex-shrink:0;transition:all .15s;
+    text-shadow:0 0 8px rgba(109,255,159,0.3);
+  }
+  .sched-item .check:active{background:rgba(85,255,136,0.2)}
+  .sched-item.done .check{
+    border-color:var(--green);color:var(--green);background:rgba(85,255,136,0.15);
+    text-shadow:0 0 8px var(--green-glow), 0 0 18px rgba(109,255,159,0.42);
+    box-shadow:0 0 10px rgba(109,255,159,0.12), inset 0 0 8px rgba(109,255,159,0.06);
+  }
+
+  .sched-item .time{
+    color:var(--amber);white-space:nowrap;min-width:44px;font-size:0.8em;padding-top:6px;
+    text-shadow:0 0 6px var(--amber-glow), 0 0 16px rgba(255,225,74,0.34);
+  }
+  .sched-item .content{flex:1;min-width:0}
+  .sched-item .title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .sched-item .title{
+    font-size:0.9em;word-break:break-word;
+    text-shadow:0 0 6px rgba(109,255,159,0.18);
+  }
+  .sched-item .memo{font-size:0.7em;color:var(--green-dim);margin-top:3px;text-shadow:0 0 6px rgba(109,255,159,0.10)}
+  .sched-item.done .title{text-decoration:line-through;color:var(--green-dim)}
+  .sched-item.done .priority{opacity:0.4}
+
+  .priority{font-size:0.6em;padding:2px 6px;letter-spacing:1px;flex-shrink:0}
+  .priority.high{
+    color:var(--red);border:1px solid var(--red-dim);
+    text-shadow:0 0 8px var(--red-glow),0 0 18px rgba(255,102,119,0.32);
+    animation:pulse-red 2s infinite;
+    box-shadow:0 0 10px rgba(255,102,119,0.10), inset 0 0 6px rgba(255,102,119,0.04);
+  }
+  .priority.med{
+    color:var(--amber);border:1px solid var(--amber-dim);
+    text-shadow:0 0 8px var(--amber-glow),0 0 18px rgba(255,225,74,0.26);
+    box-shadow:0 0 10px rgba(255,225,74,0.08), inset 0 0 6px rgba(255,225,74,0.04);
+  }
+  .priority.low{
+    color:var(--green-dim);border:1px solid rgba(109,255,159,0.25);
+    text-shadow:0 0 7px rgba(109,255,159,0.18);
+  }
+  @keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.72}}
+
+  .item-actions{display:flex;gap:2px;flex-shrink:0}
+  .act-btn{
+    background:none;border:none;color:var(--green-dim);
+    font-family:inherit;font-size:0.7em;cursor:pointer;
+    padding:6px 6px;min-height:32px;
+    display:flex;align-items:center;justify-content:center;
+    text-shadow:0 0 6px rgba(109,255,159,0.18);
+  }
+  .act-btn:active{color:var(--green)}
+  .act-btn.del:active{color:var(--red)}
+
+  .empty-state{
+    text-align:center;padding:24px;color:var(--green-dim);
+    font-size:0.8em;border:1px dashed rgba(109,255,159,0.22);
+    text-shadow:0 0 8px rgba(109,255,159,0.14);
+    box-shadow:inset 0 0 14px rgba(109,255,159,0.03);
+  }
+
+  .idea-section{margin-bottom:20px}
+  .idea-item{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:12px;border:1px solid rgba(103,243,255,0.22);margin-bottom:5px;
+    box-shadow:inset 0 0 8px rgba(103,243,255,0.03);
+  }
+  .idea-item .idea-icon{
+    color:var(--cyan);
+    text-shadow:0 0 10px var(--cyan-glow), 0 0 22px rgba(103,243,255,0.32);
+    flex-shrink:0;font-size:1.1em;
+  }
+  .idea-item .content{flex:1;min-width:0}
+  .idea-item .title{
+    font-size:0.9em;color:var(--cyan);word-break:break-word;
+    text-shadow:0 0 4px var(--cyan-glow),0 0 14px rgba(103,243,255,0.22);
+  }
+  .idea-item .memo{font-size:0.7em;color:var(--cyan-dim);margin-top:3px;text-shadow:0 0 6px rgba(103,243,255,0.10)}
+  .idea-item .timestamp{font-size:0.6em;color:var(--cyan-dim);opacity:.9;margin-top:3px;text-shadow:0 0 6px rgba(103,243,255,0.08)}
+  .idea-item .act-btn{color:var(--cyan-dim);text-shadow:0 0 6px rgba(103,243,255,0.16)}
+  .idea-item .act-btn:active{color:var(--cyan)}
+  .idea-empty{
+    text-align:center;padding:24px;color:var(--cyan-dim);font-size:0.8em;
+    border:1px dashed rgba(103,243,255,0.22);
+    text-shadow:0 0 8px rgba(103,243,255,0.14);
+    box-shadow:inset 0 0 14px rgba(103,243,255,0.03);
+  }
+
+  .add-form{
+    border:1px solid rgba(109,255,159,0.38);padding:14px;margin-bottom:14px;background:rgba(85,255,136,0.04);
+    box-shadow:0 0 16px rgba(109,255,159,0.08), inset 0 0 16px rgba(109,255,159,0.04);
+  }
+  .add-form.cyan{
+    border-color:rgba(103,243,255,0.38);background:rgba(85,238,255,0.04);
+    box-shadow:0 0 16px rgba(103,243,255,0.08), inset 0 0 16px rgba(103,243,255,0.04);
+  }
+  .add-form .form-title{
+    font-size:0.8em;color:var(--amber);margin-bottom:10px;letter-spacing:2px;
+    text-shadow:0 0 6px var(--amber-glow),0 0 18px rgba(255,225,74,0.24);
+  }
+  .add-form.cyan .form-title{
+    color:var(--cyan);
+    text-shadow:0 0 6px var(--cyan-glow),0 0 18px rgba(103,243,255,0.24);
+  }
+
+  .form-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+  .form-row label{
+    font-size:0.75em;color:var(--green-dim);min-width:44px;
+    text-shadow:0 0 7px rgba(109,255,159,0.18);
+  }
+  .add-form.cyan .form-row label{color:var(--cyan-dim);text-shadow:0 0 7px rgba(103,243,255,0.18)}
+
+  .form-row input,.form-row textarea, .edit-inline select{
+    flex:1;background:rgba(0,0,0,0.58);border:1px solid rgba(109,255,159,0.38);
+    color:var(--green);font-family:inherit;font-size:0.85em;
+    padding:10px;outline:none;min-height:42px;
+    text-shadow:0 0 8px rgba(109,255,159,0.16);
+    box-shadow:inset 0 0 10px rgba(109,255,159,0.03);
+  }
+  .form-row input:focus,.form-row textarea:focus, .edit-inline select:focus{
+    border-color:var(--green);
+    box-shadow:
+      0 0 12px rgba(109,255,159,0.22),
+      inset 0 0 10px rgba(109,255,159,0.06);
+  }
+  .form-row textarea{height:50px;resize:vertical}
+  .add-form.cyan input,.add-form.cyan textarea{
+    border-color:rgba(103,243,255,0.38);color:var(--cyan);
+    text-shadow:0 0 8px rgba(103,243,255,0.16);
+    box-shadow:inset 0 0 10px rgba(103,243,255,0.03);
+  }
+  .add-form.cyan input:focus,.add-form.cyan textarea:focus{
+    border-color:var(--cyan);
+    box-shadow:
+      0 0 12px rgba(103,243,255,0.22),
+      inset 0 0 10px rgba(103,243,255,0.06);
+  }
+
+  .priority-selector{display:flex;gap:6px;flex:1}
+  .priority-selector .p-btn{
+    flex:1;padding:10px 4px;border:1px solid rgba(109,255,159,0.22);
+    background:none;color:var(--green-dim);font-family:inherit;
+    font-size:0.75em;cursor:pointer;text-align:center;
+    min-height:42px;letter-spacing:1px;transition:all .15s;
+    text-shadow:0 0 8px rgba(109,255,159,0.18);
+    box-shadow:inset 0 0 8px rgba(109,255,159,0.03);
+  }
+  .priority-selector .p-btn:active{opacity:.7}
+  .priority-selector .p-btn.sel-high{
+    border-color:var(--red);color:var(--red);
+    background:rgba(255,85,102,0.12);
+    text-shadow:0 0 6px rgba(255,85,102,0.55),0 0 16px rgba(255,85,102,0.22);
+    box-shadow:0 0 12px rgba(255,102,119,0.12), inset 0 0 10px rgba(255,102,119,0.05);
+  }
+  .priority-selector .p-btn.sel-med{
+    border-color:var(--amber);color:var(--amber);
+    background:rgba(255,221,51,0.12);
+    text-shadow:0 0 6px var(--amber-glow),0 0 16px rgba(255,225,74,0.22);
+    box-shadow:0 0 12px rgba(255,225,74,0.12), inset 0 0 10px rgba(255,225,74,0.05);
+  }
+  .priority-selector .p-btn.sel-low{
+    border-color:var(--green-dim);color:var(--green);
+    background:rgba(85,255,136,0.06);
+    text-shadow:0 0 6px rgba(109,255,159,0.34),0 0 14px rgba(109,255,159,0.18);
+    box-shadow:0 0 12px rgba(109,255,159,0.10), inset 0 0 10px rgba(109,255,159,0.05);
+  }
+
+  .edit-inline{
+    border:1px solid var(--green);padding:12px;margin-bottom:5px;
+    background:rgba(85,255,136,0.05);
+    box-shadow:0 0 14px rgba(109,255,159,0.08), inset 0 0 14px rgba(109,255,159,0.04);
+  }
+  .edit-inline.cyan{
+    border-color:var(--cyan);background:rgba(85,238,255,0.05);
+    box-shadow:0 0 14px rgba(103,243,255,0.08), inset 0 0 14px rgba(103,243,255,0.04);
+  }
+  .edit-inline .form-row label{font-size:0.7em;min-width:40px}
+  .edit-inline input,.edit-inline textarea,.edit-inline select{
+    flex:1;background:rgba(0,0,0,0.58);border:1px solid rgba(109,255,159,0.42);
+    color:var(--green);font-family:inherit;font-size:0.85em;
+    padding:8px;outline:none;min-height:38px;
+  }
+  .edit-inline input:focus,.edit-inline textarea:focus,.edit-inline select:focus{
+    border-color:var(--green);box-shadow:0 0 10px rgba(109,255,159,0.22), inset 0 0 10px rgba(109,255,159,0.06)
+  }
+  .edit-inline textarea{height:45px;resize:vertical}
+  .edit-inline.cyan input,.edit-inline.cyan textarea,.edit-inline.cyan select{
+    border-color:rgba(103,243,255,0.42);color:var(--cyan)
+  }
+  .edit-inline.cyan input:focus,.edit-inline.cyan textarea:focus,.edit-inline.cyan select:focus{
+    border-color:var(--cyan);box-shadow:0 0 10px rgba(103,243,255,0.22), inset 0 0 10px rgba(103,243,255,0.06)
+  }
+
+  .form-buttons{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+  .btn{
+    background:none;border:1px solid var(--green-dim);color:var(--green);
+    font-family:inherit;font-size:0.8em;padding:10px 16px;cursor:pointer;
+    letter-spacing:1px;min-height:42px;transition:all .15s;
+    text-shadow:0 0 8px rgba(109,255,159,0.26),0 0 18px rgba(109,255,159,0.12);
+    box-shadow:0 0 10px rgba(109,255,159,0.08), inset 0 0 8px rgba(109,255,159,0.04);
+  }
+  .btn:hover{
+    box-shadow:0 0 14px rgba(109,255,159,0.16), inset 0 0 10px rgba(109,255,159,0.05);
+  }
+  .btn:active{background:rgba(85,255,136,0.15)}
+  .btn.primary{
+    border-color:var(--green);background:rgba(85,255,136,0.12);
+    box-shadow:0 0 14px rgba(109,255,159,0.10), inset 0 0 10px rgba(109,255,159,0.05);
+  }
+  .btn.cyan{
+    border-color:var(--cyan-dim);color:var(--cyan);
+    text-shadow:0 0 8px rgba(103,243,255,0.26),0 0 18px rgba(103,243,255,0.12);
+    box-shadow:0 0 10px rgba(103,243,255,0.08), inset 0 0 8px rgba(103,243,255,0.04);
+  }
+  .btn.cyan:hover{
+    box-shadow:0 0 14px rgba(103,243,255,0.16), inset 0 0 10px rgba(103,243,255,0.05);
+  }
+  .btn.cyan:active{background:rgba(85,238,255,0.15)}
+  .btn.cyan.primary{
+    border-color:var(--cyan);background:rgba(85,238,255,0.12);
+    box-shadow:0 0 14px rgba(103,243,255,0.10), inset 0 0 10px rgba(103,243,255,0.05);
+  }
+
+  .fab-area{position:fixed;bottom:20px;right:16px;z-index:100;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .fab-menu{display:none;flex-direction:column;gap:6px;align-items:flex-end}
+  .fab-menu.open{display:flex}
+  .fab-menu button{
+    padding:10px 16px;font-family:inherit;font-size:0.8em;cursor:pointer;
+    min-height:44px;letter-spacing:1px;border:1px solid var(--green);
+    background:var(--bg);color:var(--green);
+    text-shadow:0 0 8px rgba(109,255,159,0.34), 0 0 18px rgba(109,255,159,0.14);
+    box-shadow:0 0 16px rgba(109,255,159,0.20), inset 0 0 10px rgba(109,255,159,0.04);
+  }
+  .fab-menu button:hover{
+    box-shadow:0 0 22px rgba(109,255,159,0.28), inset 0 0 12px rgba(109,255,159,0.05);
+  }
+  .fab-menu button:active{background:rgba(85,255,136,0.15)}
+  .fab-menu button.cyan-btn{
+    border-color:var(--cyan);color:var(--cyan);
+    text-shadow:0 0 8px rgba(103,243,255,0.34), 0 0 18px rgba(103,243,255,0.14);
+    box-shadow:0 0 16px rgba(103,243,255,0.20), inset 0 0 10px rgba(103,243,255,0.04);
+  }
+  .fab-menu button.cyan-btn:hover{
+    box-shadow:0 0 22px rgba(103,243,255,0.28), inset 0 0 12px rgba(103,243,255,0.05);
+  }
+  .fab-menu button.cyan-btn:active{background:rgba(85,238,255,0.15)}
+  .fab-main{
+    width:52px;height:52px;border:2px solid var(--green);background:var(--bg);
+    color:var(--green);font-family:inherit;font-size:1.5em;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    text-shadow:0 0 10px var(--green-glow),0 0 26px rgba(109,255,159,0.42);
+    box-shadow:0 0 18px rgba(109,255,159,0.38),0 0 36px rgba(109,255,159,0.14), inset 0 0 10px rgba(109,255,159,0.06);
+  }
+  .fab-main:hover{
+    box-shadow:0 0 22px rgba(109,255,159,0.48),0 0 42px rgba(109,255,159,0.18), inset 0 0 12px rgba(109,255,159,0.08);
+  }
+  .fab-main:active{background:rgba(85,255,136,0.15)}
+
+  .status-bar{
+    margin-top:20px;padding:8px 10px;border-top:1px solid rgba(109,255,159,0.25);
+    display:flex;justify-content:space-between;font-size:0.65em;color:var(--green-dim);
+    text-shadow:0 0 8px rgba(109,255,159,0.14);
+  }
+
+  @media(max-width:600px){
+    .container{padding:10px}
+    .header h1{font-size:1em;letter-spacing:3px}
+    .date-nav{gap:6px}
+    .date-nav button{padding:8px 10px;font-size:.9em}
+    .date-nav .current-date{min-width:130px;font-size:.8em}
+    .week-bar .day{padding:6px 1px;font-size:.68em;min-height:48px}
+    .form-row{flex-direction:column;gap:4px}
+    .form-row label{min-width:auto}
+    .priority-selector{gap:4px}
+    .backup-bar{justify-content:stretch}
+    .backup-btn{flex:1}
+  }
 </style>
 </head>
-
 <body>
 
 <div class="container">
+  <div class="header">
+    <h1>█▓▒░ SCHED.SYS ░▒▓█</h1>
+    <div class="sub">v2.2.0 / PERSONAL SCHEDULE TERMINAL</div>
+  </div>
 
-<h1 class="neon-green">█ SCHED.SYS █</h1>
+  <div class="date-nav">
+    <button onclick="moveDate(-1)">◄</button>
+    <button class="today-btn" onclick="goToday()">TODAY</button>
+    <div class="current-date" id="currentDate"></div>
+    <button onclick="moveDate(1)">►</button>
+  </div>
 
-<div class="top-bar">
-<button onclick="prevDay()">◀</button>
-<div id="date"></div>
-<button onclick="nextDay()">▶</button>
+  <div class="backup-bar">
+    <button class="backup-btn" onclick="exportData()">EXPORT</button>
+    <button class="backup-btn cyan" onclick="triggerImport()">IMPORT</button>
+    <input type="file" id="importFile" accept=".json,application/json" onchange="handleImportFile(event)">
+  </div>
+
+  <div class="week-bar" id="weekBar"></div>
+  <div id="addFormArea"></div>
+  <div class="section-label"><span>▸ SCHEDULE.DB</span><span id="schedCount"></span></div>
+  <div class="schedule-list" id="scheduleList"></div>
+
+  <div id="ideaFormArea"></div>
+  <div class="section-label cyan"><span>◆ IDEA_NOTE.DB</span><span id="ideaCount"></span></div>
+  <div class="idea-section" id="ideaList"></div>
+
+  <div class="status-bar">
+    <span id="statusInfo">SYSTEM READY</span>
+    <span id="statusDate"></span>
+  </div>
 </div>
 
-<input id="title" placeholder="일정 입력">
-<button onclick="add()">ADD</button>
-
-<hr>
-
-<div id="list"></div>
-
-<hr>
-
-<button onclick="exportData()">EXPORT</button>
-<input type="file" onchange="importData(event)">
-
+<div class="fab-area">
+  <div class="fab-menu" id="fabMenu">
+    <button onclick="openSchedForm()">▸ SCHEDULE</button>
+    <button class="cyan-btn" onclick="openIdeaForm()">◆ IDEA</button>
+  </div>
+  <button class="fab-main" id="fabBtn" onclick="fabToggle()">+</button>
 </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem('sched')||'{}');
-let date = new Date();
+  let currentDate=new Date();
+  let schedules=JSON.parse(localStorage.getItem('sched_data')||'{}');
+  let ideas=JSON.parse(localStorage.getItem('idea_data')||'{}');
+  let fabOpen=false,currentForm=null,selectedPriority='med';
+  let editingSchedule=null;
+  let editingIdea=null;
 
-function key(){
-  return date.toISOString().slice(0,10);
-}
+  const dateKey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const isSameDay=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+  const escHtml=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const nowTime=()=>{const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');};
 
-function render(){
-  document.getElementById('date').innerText = key();
-  let list = document.getElementById('list');
-  list.innerHTML="";
+  function setStatus(message){
+    document.getElementById('statusInfo').textContent=message;
+  }
 
-  (data[key()]||[]).forEach((d,i)=>{
-    let div=document.createElement('div');
-    div.className="item"+(d.done?" done":"");
-    div.innerHTML=`
-      ${d.title}
-      <button onclick="toggle(${i})">✔</button>
-      <button onclick="del(${i})">X</button>
-    `;
-    list.appendChild(div);
-  });
+  function persist(){
+    localStorage.setItem('sched_data',JSON.stringify(schedules));
+    localStorage.setItem('idea_data',JSON.stringify(ideas));
+  }
 
-  localStorage.setItem('sched',JSON.stringify(data));
-}
+  function formatDateKo(d){
+    const dn=['일','월','화','수','목','금','토'][d.getDay()];
+    return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' ['+dn+']';
+  }
 
-function add(){
-  let t=document.getElementById('title').value;
-  if(!t)return;
-  if(!data[key()])data[key()]=[];
-  data[key()].push({title:t,done:false});
-  document.getElementById('title').value="";
-  render();
-}
-
-function toggle(i){
-  data[key()][i].done=!data[key()][i].done;
-  render();
-}
-
-function del(i){
-  data[key()].splice(i,1);
-  render();
-}
-
-function prevDay(){
-  date.setDate(date.getDate()-1);
-  render();
-}
-
-function nextDay(){
-  date.setDate(date.getDate()+1);
-  render();
-}
-
-function exportData(){
-  let blob=new Blob([JSON.stringify(data)],{type:"application/json"});
-  let a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download="sched_backup.json";
-  a.click();
-}
-
-function importData(e){
-  let file=e.target.files[0];
-  let reader=new FileReader();
-  reader.onload=function(){
-    data=JSON.parse(reader.result);
+  function moveDate(n){
+    currentDate.setDate(currentDate.getDate()+n);
+    editingSchedule=null;editingIdea=null;
     render();
   }
-  reader.readAsText(file);
-}
+  function goToday(){
+    currentDate=new Date();
+    editingSchedule=null;editingIdea=null;
+    render();
+  }
+  function selectDate(d){
+    currentDate=new Date(d);
+    editingSchedule=null;editingIdea=null;
+    render();
+  }
 
-render();
+  function triggerImport(){
+    document.getElementById('importFile').click();
+  }
+
+  function exportData(){
+    try{
+      const payload={
+        version:'2.2.0',
+        exportedAt:new Date().toISOString(),
+        sched_data:schedules,
+        idea_data:ideas
+      };
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download='sched_sys_backup_'+dateKey(new Date())+'.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setStatus('EXPORT COMPLETE');
+    }catch(e){
+      setStatus('EXPORT FAILED');
+      alert('백업 파일 생성 중 오류가 발생했습니다.');
+    }
+  }
+
+  function handleImportFile(event){
+    const file=event.target.files && event.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        const parsed=JSON.parse(ev.target.result);
+        if(!parsed || typeof parsed!=='object') throw new Error('invalid');
+        const importedSchedules=parsed.sched_data;
+        const importedIdeas=parsed.idea_data;
+
+        if(typeof importedSchedules!=='object' || importedSchedules===null || Array.isArray(importedSchedules)) throw new Error('bad sched');
+        if(typeof importedIdeas!=='object' || importedIdeas===null || Array.isArray(importedIdeas)) throw new Error('bad idea');
+
+        const ok=confirm('현재 데이터를 가져온 백업 데이터로 덮어쓰시겠습니까?');
+        if(!ok){
+          event.target.value='';
+          setStatus('IMPORT CANCELLED');
+          return;
+        }
+
+        schedules=importedSchedules;
+        ideas=importedIdeas;
+        persist();
+        editingSchedule=null;
+        editingIdea=null;
+        closeAllForms();
+        render();
+        setStatus('IMPORT COMPLETE');
+      }catch(err){
+        setStatus('IMPORT FAILED');
+        alert('올바른 백업 파일이 아닙니다.');
+      }finally{
+        event.target.value='';
+      }
+    };
+    reader.readAsText(file,'utf-8');
+  }
+
+  function fabToggle(){
+    if(currentForm){closeAllForms();return;}
+    fabOpen=!fabOpen;
+    document.getElementById('fabMenu').classList.toggle('open',fabOpen);
+    document.getElementById('fabBtn').textContent=fabOpen?'×':'+';
+  }
+  function closeFab(){
+    fabOpen=false;
+    document.getElementById('fabMenu').classList.remove('open');
+    document.getElementById('fabBtn').textContent='+';
+  }
+  function closeAllForms(){
+    currentForm=null;selectedPriority='med';
+    document.getElementById('addFormArea').innerHTML='';
+    document.getElementById('ideaFormArea').innerHTML='';
+    closeFab();
+  }
+
+  function openSchedForm(){
+    closeFab();currentForm='sched';selectedPriority='med';
+    document.getElementById('ideaFormArea').innerHTML='';
+    document.getElementById('addFormArea').innerHTML=`
+      <div class="add-form">
+        <div class="form-title">▸ NEW_RECORD — ${nowTime()}</div>
+        <div class="form-row"><label>TITLE</label><input type="text" id="inputTitle" placeholder="일정 제목 입력..." maxlength="100"></div>
+        <div class="form-row">
+          <label>PRIOR</label>
+          <div class="priority-selector">
+            <button type="button" class="p-btn" id="pH" onclick="setPri('high')">HIGH</button>
+            <button type="button" class="p-btn sel-med" id="pM" onclick="setPri('med')">MED</button>
+            <button type="button" class="p-btn" id="pL" onclick="setPri('low')">LOW</button>
+          </div>
+        </div>
+        <div class="form-row"><label>MEMO</label><textarea id="inputMemo" placeholder="메모 (선택)..." maxlength="200"></textarea></div>
+        <div class="form-buttons">
+          <button type="button" class="btn" onclick="closeAllForms()">CANCEL</button>
+          <button type="button" class="btn primary" onclick="addItem()">ADD_RECORD</button>
+        </div>
+      </div>`;
+    document.getElementById('fabBtn').textContent='×';
+    setTimeout(()=>document.getElementById('inputTitle').focus(),100);
+  }
+
+  function setPri(p){
+    selectedPriority=p;
+    document.getElementById('pH').className='p-btn'+(p==='high'?' sel-high':'');
+    document.getElementById('pM').className='p-btn'+(p==='med'?' sel-med':'');
+    document.getElementById('pL').className='p-btn'+(p==='low'?' sel-low':'');
+  }
+
+  function addItem(){
+    const title=document.getElementById('inputTitle').value.trim();
+    const memo=document.getElementById('inputMemo').value.trim();
+    if(!title){
+      document.getElementById('inputTitle').style.borderColor='var(--red)';
+      setStatus('TITLE REQUIRED');
+      return;
+    }
+    const key=dateKey(currentDate);
+    if(!schedules[key])schedules[key]=[];
+    schedules[key].push({time:nowTime(),title,memo,done:false,priority:selectedPriority});
+    persist();
+    closeAllForms();
+    render();
+    setStatus('SCHEDULE ADDED');
+  }
+
+  function deleteItem(key,idx){
+    if(!confirm('삭제하시겠습니까?'))return;
+    schedules[key].splice(idx,1);
+    if(!schedules[key].length)delete schedules[key];
+    persist();
+    editingSchedule=null;
+    render();
+    setStatus('SCHEDULE DELETED');
+  }
+
+  function toggleDone(key,idx){
+    schedules[key][idx].done=!schedules[key][idx].done;
+    persist();
+    render();
+    setStatus(schedules[key][idx].done ? 'TASK COMPLETE' : 'TASK REOPENED');
+  }
+
+  function startEditSched(key,idx){
+    editingSchedule={key,idx};editingIdea=null;render();
+    setStatus('EDIT MODE: SCHEDULE');
+  }
+  function cancelEditSched(){editingSchedule=null;render();setStatus('EDIT CANCELLED');}
+  function saveEditSched(){
+    const t=document.getElementById('editSchedTitle').value.trim();
+    const m=document.getElementById('editSchedMemo').value.trim();
+    const p=document.getElementById('editSchedPri').value;
+    if(!t){
+      document.getElementById('editSchedTitle').style.borderColor='var(--red)';
+      setStatus('TITLE REQUIRED');
+      return;
+    }
+    const item=schedules[editingSchedule.key][editingSchedule.idx];
+    item.title=t;item.memo=m;item.priority=p;
+    persist();
+    editingSchedule=null;render();
+    setStatus('SCHEDULE UPDATED');
+  }
+
+  function openIdeaForm(){
+    closeFab();currentForm='idea';
+    document.getElementById('addFormArea').innerHTML='';
+    document.getElementById('ideaFormArea').innerHTML=`
+      <div class="add-form cyan">
+        <div class="form-title">◆ NEW_IDEA — ${nowTime()}</div>
+        <div class="form-row"><label>IDEA</label><input type="text" id="ideaTitle" placeholder="아이디어 제목..." maxlength="100"></div>
+        <div class="form-row"><label>NOTE</label><textarea id="ideaMemo" placeholder="상세 메모 (선택)..." maxlength="500"></textarea></div>
+        <div class="form-buttons">
+          <button type="button" class="btn cyan" onclick="closeAllForms()">CANCEL</button>
+          <button type="button" class="btn cyan primary" onclick="addIdea()">LOG_IDEA</button>
+        </div>
+      </div>`;
+    document.getElementById('fabBtn').textContent='×';
+    setTimeout(()=>document.getElementById('ideaTitle').focus(),100);
+  }
+
+  function addIdea(){
+    const title=document.getElementById('ideaTitle').value.trim();
+    const memo=document.getElementById('ideaMemo').value.trim();
+    if(!title){
+      document.getElementById('ideaTitle').style.borderColor='var(--red)';
+      setStatus('IDEA TITLE REQUIRED');
+      return;
+    }
+    const key=dateKey(currentDate);
+    if(!ideas[key])ideas[key]=[];
+    ideas[key].push({title,memo,time:nowTime()});
+    persist();
+    closeAllForms();render();
+    setStatus('IDEA LOGGED');
+  }
+
+  function deleteIdea(key,idx){
+    if(!confirm('삭제하시겠습니까?'))return;
+    ideas[key].splice(idx,1);
+    if(!ideas[key].length)delete ideas[key];
+    persist();
+    editingIdea=null;render();
+    setStatus('IDEA DELETED');
+  }
+
+  function startEditIdea(key,idx){
+    editingIdea={key,idx};editingSchedule=null;render();
+    setStatus('EDIT MODE: IDEA');
+  }
+  function cancelEditIdea(){editingIdea=null;render();setStatus('EDIT CANCELLED');}
+  function saveEditIdea(){
+    const t=document.getElementById('editIdeaTitle').value.trim();
+    const m=document.getElementById('editIdeaMemo').value.trim();
+    if(!t){
+      document.getElementById('editIdeaTitle').style.borderColor='var(--red)';
+      setStatus('IDEA TITLE REQUIRED');
+      return;
+    }
+    const item=ideas[editingIdea.key][editingIdea.idx];
+    item.title=t;item.memo=m;
+    persist();
+    editingIdea=null;render();
+    setStatus('IDEA UPDATED');
+  }
+
+  function renderWeekBar(){
+    const bar=document.getElementById('weekBar'),today=new Date();
+    const start=new Date(currentDate);start.setDate(start.getDate()-currentDate.getDay());
+    const dns=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    let h='';
+    for(let i=0;i<7;i++){
+      const d=new Date(start);d.setDate(d.getDate()+i);
+      const isT=isSameDay(d,today),isA=isSameDay(d,currentDate),key=dateKey(d);
+      const hasE=(schedules[key]&&schedules[key].length)||(ideas[key]&&ideas[key].length);
+      let c='day';if(isT)c+=' today';if(isA)c+=' active';
+      h+='<div class="'+c+'" onclick="selectDate(\''+d.toISOString()+'\')">';
+      h+='<div class="day-name">'+dns[i]+'</div><div class="day-num">'+d.getDate()+'</div>';
+      h+='<div class="dot '+(hasE?'has-event':'')+'"></div></div>';
+    }
+    bar.innerHTML=h;
+  }
+
+  function renderSchedules(){
+    const list=document.getElementById('scheduleList'),key=dateKey(currentDate),items=schedules[key]||[];
+    if(!items.length){
+      list.innerHTML='<div class="empty-state">NO RECORDS FOUND_<br><span style="font-size:.85em">+ 버튼으로 일정을 추가하세요</span></div>';
+    } else {
+      const pOrd={high:0,med:1,low:2};
+      const sorted=[...items].map((it,i)=>({...it,_i:i})).sort((a,b)=>(pOrd[a.priority||'med']-pOrd[b.priority||'med'])||(a.time||'').localeCompare(b.time||''));
+      let h='';
+      sorted.forEach(item=>{
+        if(editingSchedule&&editingSchedule.key===key&&editingSchedule.idx===item._i){
+          const p=item.priority||'med';
+          h+='<div class="edit-inline">';
+          h+='<div class="form-row"><label>TITLE</label><input id="editSchedTitle" value="'+escHtml(item.title)+'" maxlength="100"></div>';
+          h+='<div class="form-row"><label>PRIOR</label><select id="editSchedPri">';
+          h+='<option value="high"'+(p==='high'?' selected':'')+'>HIGH</option>';
+          h+='<option value="med"'+(p==='med'?' selected':'')+'>MED</option>';
+          h+='<option value="low"'+(p==='low'?' selected':'')+'>LOW</option>';
+          h+='</select></div>';
+          h+='<div class="form-row"><label>MEMO</label><textarea id="editSchedMemo" maxlength="200">'+escHtml(item.memo||'')+'</textarea></div>';
+          h+='<div class="form-buttons">';
+          h+='<button type="button" class="btn" onclick="cancelEditSched()">CANCEL</button>';
+          h+='<button type="button" class="btn primary" onclick="saveEditSched()">SAVE</button>';
+          h+='</div></div>';
+        } else {
+          const p=item.priority||'med',pL={high:'HIGH',med:'MED',low:'LOW'}[p];
+          h+='<div class="sched-item'+(item.done?' done':'')+'">';
+          h+='<div class="check" onclick="toggleDone(\''+key+'\','+item._i+')">'+(item.done?'✓':'')+'</div>';
+          h+='<div class="time">'+(item.time||'--:--')+'</div>';
+          h+='<div class="content"><div class="title-row"><span class="title">'+escHtml(item.title)+'</span>';
+          h+='<span class="priority '+p+'">'+pL+'</span></div>';
+          if(item.memo)h+='<div class="memo">// '+escHtml(item.memo)+'</div>';
+          h+='</div>';
+          h+='<div class="item-actions">';
+          h+='<button type="button" class="act-btn" onclick="startEditSched(\''+key+'\','+item._i+')">EDIT</button>';
+          h+='<button type="button" class="act-btn del" onclick="deleteItem(\''+key+'\','+item._i+')">DEL</button>';
+          h+='</div></div>';
+        }
+      });
+      list.innerHTML=h;
+      if(editingSchedule){const el=document.getElementById('editSchedTitle');if(el)el.focus();}
+    }
+    const done=items.filter(i=>i.done).length;
+    document.getElementById('schedCount').textContent='['+done+'/'+items.length+' DONE]';
+  }
+
+  function renderIdeas(){
+    const list=document.getElementById('ideaList'),key=dateKey(currentDate),items=ideas[key]||[];
+    if(!items.length){
+      list.innerHTML='<div class="idea-empty">NO IDEAS LOGGED_<br><span style="font-size:.85em">+ 버튼으로 아이디어를 기록하세요</span></div>';
+    } else {
+      let h='';
+      items.forEach((item,idx)=>{
+        if(editingIdea&&editingIdea.key===key&&editingIdea.idx===idx){
+          h+='<div class="edit-inline cyan">';
+          h+='<div class="form-row"><label>IDEA</label><input id="editIdeaTitle" value="'+escHtml(item.title)+'" maxlength="100"></div>';
+          h+='<div class="form-row"><label>NOTE</label><textarea id="editIdeaMemo" maxlength="500">'+escHtml(item.memo||'')+'</textarea></div>';
+          h+='<div class="form-buttons">';
+          h+='<button type="button" class="btn cyan" onclick="cancelEditIdea()">CANCEL</button>';
+          h+='<button type="button" class="btn cyan primary" onclick="saveEditIdea()">SAVE</button>';
+          h+='</div></div>';
+        } else {
+          h+='<div class="idea-item"><div class="idea-icon">◇</div><div class="content">';
+          h+='<div class="title">'+escHtml(item.title)+'</div>';
+          if(item.memo)h+='<div class="memo">// '+escHtml(item.memo)+'</div>';
+          h+='<div class="timestamp">'+(item.time||'')+'</div></div>';
+          h+='<div class="item-actions">';
+          h+='<button type="button" class="act-btn" onclick="startEditIdea(\''+key+'\','+idx+')">EDIT</button>';
+          h+='<button type="button" class="act-btn del" onclick="deleteIdea(\''+key+'\','+idx+')">DEL</button>';
+          h+='</div></div>';
+        }
+      });
+      list.innerHTML=h;
+      if(editingIdea){const el=document.getElementById('editIdeaTitle');if(el)el.focus();}
+    }
+    document.getElementById('ideaCount').textContent='['+items.length+']';
+  }
+
+  function render(){
+    document.getElementById('currentDate').textContent=formatDateKo(currentDate);
+    document.getElementById('statusDate').textContent=dateKey(currentDate);
+    renderWeekBar();renderSchedules();renderIdeas();
+  }
+
+  render();
 </script>
-
 </body>
-</html>
+</html>'''
+path = "/mnt/data/index_neon_export_import.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(html)
+print(path)
