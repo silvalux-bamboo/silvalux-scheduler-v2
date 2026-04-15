@@ -1,4 +1,4 @@
-html = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -26,14 +26,12 @@ html = r'''<!DOCTYPE html>
 
   body::before{
     content:"";position:fixed;top:0;left:0;right:0;bottom:0;
-    background:
-      repeating-linear-gradient(0deg,var(--scanline) 0px,var(--scanline) 1px,transparent 1px,transparent 3px);
+    background:repeating-linear-gradient(0deg,var(--scanline) 0px,var(--scanline) 1px,transparent 1px,transparent 3px);
     pointer-events:none;z-index:9999;
   }
   body::after{
     content:"";position:fixed;top:0;left:0;right:0;bottom:0;
-    background:
-      radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.42) 100%);
+    background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.42) 100%);
     pointer-events:none;z-index:9998;
   }
 
@@ -42,17 +40,11 @@ html = r'''<!DOCTYPE html>
   .header{
     border:1px solid var(--green-dim);padding:10px 16px;
     margin-bottom:16px;text-align:center;background:rgba(85,255,136,0.04);
-    box-shadow:
-      0 0 10px rgba(109,255,159,0.16),
-      inset 0 0 18px rgba(109,255,159,0.06);
+    box-shadow:0 0 10px rgba(109,255,159,0.16), inset 0 0 18px rgba(109,255,159,0.06);
   }
   .header h1{
     font-size:1.3em;letter-spacing:5px;
-    text-shadow:
-      0 0 3px var(--green),
-      0 0 10px var(--green-glow),
-      0 0 22px var(--green-glow),
-      0 0 46px rgba(109,255,159,0.72);
+    text-shadow:0 0 3px var(--green),0 0 10px var(--green-glow),0 0 22px var(--green-glow),0 0 46px rgba(109,255,159,0.72);
     animation:flicker 4s infinite;
   }
   .header .sub{
@@ -75,71 +67,17 @@ html = r'''<!DOCTYPE html>
   .date-nav button:active{background:rgba(85,255,136,0.15)}
   .date-nav .current-date{
     min-width:170px;text-align:center;font-size:0.9em;
-    text-shadow:
-      0 0 3px var(--green),
-      0 0 10px var(--green-glow),
-      0 0 24px rgba(109,255,159,0.45);
+    text-shadow:0 0 3px var(--green),0 0 10px var(--green-glow),0 0 24px rgba(109,255,159,0.45);
   }
   .date-nav .today-btn{
     font-size:0.75em;color:var(--amber);border-color:var(--amber-dim);
-    text-shadow:
-      0 0 3px var(--amber),
-      0 0 10px var(--amber-glow),
-      0 0 22px rgba(255,225,74,0.44);
+    text-shadow:0 0 3px var(--amber),0 0 10px var(--amber-glow),0 0 22px rgba(255,225,74,0.44);
     box-shadow:0 0 12px rgba(255,225,74,0.12), inset 0 0 8px rgba(255,225,74,0.05);
   }
   .date-nav .today-btn:hover{
     box-shadow:0 0 16px rgba(255,225,74,0.24), inset 0 0 12px rgba(255,225,74,0.08);
   }
   .date-nav .today-btn:active{background:rgba(255,221,51,0.15)}
-
-  .week-bar{display:flex;gap:3px;margin-bottom:16px}
-  .week-bar .day{
-    flex:1;text-align:center;padding:8px 2px;border:1px solid rgba(109,255,159,0.24);
-    cursor:pointer;font-size:0.75em;transition:all .2s;min-height:52px;
-    box-shadow:inset 0 0 8px rgba(109,255,159,0.03);
-  }
-  .week-bar .day:active{background:rgba(85,255,136,0.1)}
-  .week-bar .day.active{
-    border-color:var(--green);
-    background:rgba(85,255,136,0.12);
-    text-shadow:
-      0 0 3px var(--green),
-      0 0 8px var(--green-glow),
-      0 0 18px rgba(109,255,159,0.45);
-    box-shadow:
-      0 0 12px rgba(109,255,159,0.12),
-      inset 0 0 16px rgba(109,255,159,0.06);
-  }
-  .week-bar .day.today{
-    border-color:var(--amber);color:var(--amber);
-    box-shadow:inset 0 0 10px rgba(255,225,74,0.04);
-  }
-  .week-bar .day.today.active{
-    border-color:var(--amber);background:rgba(255,221,51,0.12);
-    text-shadow:
-      0 0 3px var(--amber),
-      0 0 9px var(--amber-glow),
-      0 0 18px rgba(255,225,74,0.38);
-    box-shadow:
-      0 0 14px rgba(255,225,74,0.12),
-      inset 0 0 16px rgba(255,225,74,0.06);
-  }
-  .week-bar .day .day-name{font-size:0.85em;color:var(--green-dim);text-shadow:0 0 8px rgba(109,255,159,0.18)}
-  .week-bar .day.today .day-name{color:var(--amber-dim);text-shadow:0 0 8px rgba(255,225,74,0.18)}
-  .week-bar .day .day-num{
-    font-size:1.1em;margin-top:2px;
-    text-shadow:0 0 8px rgba(109,255,159,0.22);
-  }
-  .week-bar .day .dot{
-    width:5px;height:5px;border-radius:50%;background:var(--green);margin:4px auto 0;opacity:0;
-    box-shadow:0 0 6px var(--green-glow),0 0 14px rgba(109,255,159,0.42);
-  }
-  .week-bar .day .dot.has-event{opacity:1}
-  .week-bar .day.today .dot.has-event{
-    background:var(--amber);
-    box-shadow:0 0 6px var(--amber-glow),0 0 14px rgba(255,225,74,0.42);
-  }
 
   .backup-bar{
     display:flex;justify-content:flex-end;gap:8px;align-items:center;
@@ -168,34 +106,61 @@ html = r'''<!DOCTYPE html>
   }
   #importFile{display:none}
 
+  .week-bar{display:flex;gap:3px;margin-bottom:16px}
+  .week-bar .day{
+    flex:1;text-align:center;padding:8px 2px;border:1px solid rgba(109,255,159,0.24);
+    cursor:pointer;font-size:0.75em;transition:all .2s;min-height:52px;
+    box-shadow:inset 0 0 8px rgba(109,255,159,0.03);
+  }
+  .week-bar .day:active{background:rgba(85,255,136,0.1)}
+  .week-bar .day.active{
+    border-color:var(--green);
+    background:rgba(85,255,136,0.12);
+    text-shadow:0 0 3px var(--green),0 0 8px var(--green-glow),0 0 18px rgba(109,255,159,0.45);
+    box-shadow:0 0 12px rgba(109,255,159,0.12), inset 0 0 16px rgba(109,255,159,0.06);
+  }
+  .week-bar .day.today{
+    border-color:var(--amber);color:var(--amber);
+    box-shadow:inset 0 0 10px rgba(255,225,74,0.04);
+  }
+  .week-bar .day.today.active{
+    border-color:var(--amber);background:rgba(255,221,51,0.12);
+    text-shadow:0 0 3px var(--amber),0 0 9px var(--amber-glow),0 0 18px rgba(255,225,74,0.38);
+    box-shadow:0 0 14px rgba(255,225,74,0.12), inset 0 0 16px rgba(255,225,74,0.06);
+  }
+  .week-bar .day .day-name{font-size:0.85em;color:var(--green-dim);text-shadow:0 0 8px rgba(109,255,159,0.18)}
+  .week-bar .day.today .day-name{color:var(--amber-dim);text-shadow:0 0 8px rgba(255,225,74,0.18)}
+  .week-bar .day .day-num{font-size:1.1em;margin-top:2px;text-shadow:0 0 8px rgba(109,255,159,0.22)}
+  .week-bar .day .dot{
+    width:5px;height:5px;border-radius:50%;background:var(--green);margin:4px auto 0;opacity:0;
+    box-shadow:0 0 6px var(--green-glow),0 0 14px rgba(109,255,159,0.42);
+  }
+  .week-bar .day .dot.has-event{opacity:1}
+  .week-bar .day.today .dot.has-event{
+    background:var(--amber);
+    box-shadow:0 0 6px var(--amber-glow),0 0 14px rgba(255,225,74,0.42);
+  }
+
   .section-label{
     font-size:0.8em;color:var(--green-dim);
     border-bottom:1px solid rgba(109,255,159,0.28);
     padding-bottom:4px;margin-bottom:10px;letter-spacing:3px;
     display:flex;justify-content:space-between;
-    text-shadow:
-      0 0 3px rgba(109,255,159,0.42),
-      0 0 10px rgba(109,255,159,0.26),
-      0 0 22px rgba(109,255,159,0.14);
+    text-shadow:0 0 3px rgba(109,255,159,0.42),0 0 10px rgba(109,255,159,0.26),0 0 22px rgba(109,255,159,0.14);
   }
   .section-label.cyan{
     color:var(--cyan-dim);
     border-bottom-color:rgba(103,243,255,0.28);
-    text-shadow:
-      0 0 3px rgba(103,243,255,0.42),
-      0 0 10px rgba(103,243,255,0.26),
-      0 0 22px rgba(103,243,255,0.14);
+    text-shadow:0 0 3px rgba(103,243,255,0.42),0 0 10px rgba(103,243,255,0.26),0 0 22px rgba(103,243,255,0.14);
   }
 
   .schedule-list{margin-bottom:20px}
-
   .sched-item{
     display:flex;align-items:flex-start;gap:10px;
     padding:12px;border:1px solid rgba(109,255,159,0.22);
     margin-bottom:5px;transition:all .15s;
     box-shadow:inset 0 0 8px rgba(109,255,159,0.03);
   }
-
   .sched-item .check{
     width:30px;height:30px;border:2px solid var(--green-dim);
     display:flex;align-items:center;justify-content:center;
@@ -208,17 +173,13 @@ html = r'''<!DOCTYPE html>
     text-shadow:0 0 8px var(--green-glow), 0 0 18px rgba(109,255,159,0.42);
     box-shadow:0 0 10px rgba(109,255,159,0.12), inset 0 0 8px rgba(109,255,159,0.06);
   }
-
   .sched-item .time{
     color:var(--amber);white-space:nowrap;min-width:44px;font-size:0.8em;padding-top:6px;
     text-shadow:0 0 6px var(--amber-glow), 0 0 16px rgba(255,225,74,0.34);
   }
   .sched-item .content{flex:1;min-width:0}
   .sched-item .title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .sched-item .title{
-    font-size:0.9em;word-break:break-word;
-    text-shadow:0 0 6px rgba(109,255,159,0.18);
-  }
+  .sched-item .title{font-size:0.9em;word-break:break-word;text-shadow:0 0 6px rgba(109,255,159,0.18)}
   .sched-item .memo{font-size:0.7em;color:var(--green-dim);margin-top:3px;text-shadow:0 0 6px rgba(109,255,159,0.10)}
   .sched-item.done .title{text-decoration:line-through;color:var(--green-dim)}
   .sched-item.done .priority{opacity:0.4}
@@ -310,7 +271,7 @@ html = r'''<!DOCTYPE html>
   }
   .add-form.cyan .form-row label{color:var(--cyan-dim);text-shadow:0 0 7px rgba(103,243,255,0.18)}
 
-  .form-row input,.form-row textarea, .edit-inline select{
+  .form-row input,.form-row textarea,.edit-inline select{
     flex:1;background:rgba(0,0,0,0.58);border:1px solid rgba(109,255,159,0.38);
     color:var(--green);font-family:inherit;font-size:0.85em;
     padding:10px;outline:none;min-height:42px;
@@ -319,9 +280,7 @@ html = r'''<!DOCTYPE html>
   }
   .form-row input:focus,.form-row textarea:focus, .edit-inline select:focus{
     border-color:var(--green);
-    box-shadow:
-      0 0 12px rgba(109,255,159,0.22),
-      inset 0 0 10px rgba(109,255,159,0.06);
+    box-shadow:0 0 12px rgba(109,255,159,0.22), inset 0 0 10px rgba(109,255,159,0.06);
   }
   .form-row textarea{height:50px;resize:vertical}
   .add-form.cyan input,.add-form.cyan textarea{
@@ -331,9 +290,7 @@ html = r'''<!DOCTYPE html>
   }
   .add-form.cyan input:focus,.add-form.cyan textarea:focus{
     border-color:var(--cyan);
-    box-shadow:
-      0 0 12px rgba(103,243,255,0.22),
-      inset 0 0 10px rgba(103,243,255,0.06);
+    box-shadow:0 0 12px rgba(103,243,255,0.22), inset 0 0 10px rgba(103,243,255,0.06);
   }
 
   .priority-selector{display:flex;gap:6px;flex:1}
@@ -901,8 +858,4 @@ html = r'''<!DOCTYPE html>
   render();
 </script>
 </body>
-</html>'''
-path = "/mnt/data/index_neon_export_import.html"
-with open(path, "w", encoding="utf-8") as f:
-    f.write(html)
-print(path)
+</html>
